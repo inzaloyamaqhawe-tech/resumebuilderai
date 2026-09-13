@@ -8,8 +8,26 @@
 // to call (their old Publisher API was deprecated). We don't badge results
 // as Indeed since we're not on their feed.
 
+const NAMED_ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ', rsquo: '’', lsquo: '‘', rdquo: '”', ldquo: '“', mdash: '—', ndash: '–', hellip: '…' };
+
+function decodeEntities(text) {
+  return text
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(parseInt(dec, 10)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
+    .replace(/&(amp|lt|gt|quot|apos|nbsp|rsquo|lsquo|rdquo|ldquo|mdash|ndash|hellip);/g, (_, name) => NAMED_ENTITIES[name]);
+}
+
+// Some sources (e.g. Arbeitnow) double-encode: the "tags" are literally the
+// text "&lt;p&gt;" rather than real <p> markup, so entities must be decoded
+// BEFORE stripping — decoding first turns them into real tags, which the
+// second pass then strips. Running it twice catches both single- and
+// double-encoded input without needing to know which one we got.
 function stripHtml(html) {
-  return String(html || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+  let text = String(html || '');
+  text = decodeEntities(text);
+  text = text.replace(/<[^>]*>/g, ' ');
+  text = decodeEntities(text); // in case stripping revealed another layer of entities
+  return text.replace(/\s+/g, ' ').trim();
 }
 
 async function searchArbeitnow({ q, location }) {
