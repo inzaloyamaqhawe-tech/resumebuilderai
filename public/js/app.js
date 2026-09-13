@@ -141,6 +141,15 @@ async function searchJobs() {
 }
 document.getElementById('jobSearchBtn').addEventListener('click', searchJobs);
 
+document.getElementById('heroSearchBtn').addEventListener('click', () => {
+  document.getElementById('jobQuery').value = document.getElementById('heroQuery').value;
+  document.getElementById('jobLocation').value = document.getElementById('heroLocation').value;
+  showView('jobs');
+  searchJobs();
+});
+document.getElementById('heroQuery').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('heroSearchBtn').click(); });
+document.getElementById('heroLocation').addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('heroSearchBtn').click(); });
+
 const jobModal = document.getElementById('jobModal');
 let selectedJob = null;
 function openJobModal(job) {

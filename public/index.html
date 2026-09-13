@@ -35,11 +35,15 @@
 
   <!-- HOME / HERO -->
   <section class="view active" data-view="dashboard">
-    <div class="hero-banner">
-      <div class="hero-copy">
+    <div class="hero-search">
+      <div class="hero-search-inner">
         <div class="eyebrow">AI-powered infrastructure · IY Technologies showcase</div>
-        <h1>Search real jobs. Tailor your CV with AI. Apply with confidence.</h1>
-        <p>Search live job listings, pull in a role's description, and let our engine rewrite your CV to match it — keeping everything truthful to your real experience. One account works across search, tailoring, and your subscription.</p>
+        <h1>Find your next job. Tailor your CV instantly.</h1>
+        <div class="search-bar">
+          <input type="text" id="heroQuery" placeholder="Job title or keyword" />
+          <input type="text" id="heroLocation" placeholder="Location or 'remote'" />
+          <button id="heroSearchBtn">Search Jobs</button>
+        </div>
         <div class="hero-stats">
           <div class="stat-chip"><div class="n" id="statSource">—</div><div class="l">Live job source</div></div>
           <div class="stat-chip"><div class="n" id="statAiMode">—</div><div class="l">Tailoring engine</div></div>
@@ -47,26 +51,26 @@
         </div>
         <p class="hero-disclaimer">AI-tailored suggestions are a starting point — review everything before you submit an application. We never invent employers, dates, or skills you didn't provide.</p>
       </div>
+    </div>
 
-      <div class="panel hero-auth" id="heroAuth">
-        <div class="auth-tabs">
-          <button class="auth-tab active" data-mode="signup">Create free account</button>
-          <button class="auth-tab" data-mode="login">Log in</button>
-        </div>
-        <div id="authLoggedOut">
-          <p class="note" style="margin-top:0;">Free to search jobs and upload your CV. Subscribe any time to unlock AI tailoring.</p>
-          <div class="row"><input type="email" id="authEmail" placeholder="you@example.com" /></div>
-          <div class="row" style="margin-top:8px;"><input type="password" id="authPassword" placeholder="Password (min 6 characters)" /></div>
-          <div class="row" style="margin-top:10px;"><button id="authSubmitBtn">Create free account</button></div>
-          <div id="authMsg" class="note"></div>
-        </div>
-        <div id="authLoggedIn" style="display:none;">
-          <p>Signed in as <strong id="authWhoEmail"></strong></p>
-          <p class="note" id="authStatusNote"></p>
-          <div class="row">
-            <button class="secondary" id="goJobsFromHero">Find Jobs</button>
-            <button class="ghost" id="logoutBtn">Log out</button>
-          </div>
+    <div class="panel hero-auth" id="heroAuth">
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-mode="signup">Create free account</button>
+        <button class="auth-tab" data-mode="login">Log in</button>
+      </div>
+      <div id="authLoggedOut">
+        <p class="note" style="margin-top:0;">Free to search jobs and upload your CV. Subscribe any time to unlock AI tailoring.</p>
+        <div class="row"><input type="email" id="authEmail" placeholder="you@example.com" /></div>
+        <div class="row" style="margin-top:8px;"><input type="password" id="authPassword" placeholder="Password (min 6 characters)" /></div>
+        <div class="row" style="margin-top:10px;"><button id="authSubmitBtn">Create free account</button></div>
+        <div id="authMsg" class="note"></div>
+      </div>
+      <div id="authLoggedIn" style="display:none;">
+        <p>Signed in as <strong id="authWhoEmail"></strong></p>
+        <p class="note" id="authStatusNote"></p>
+        <div class="row">
+          <button class="secondary" id="goJobsFromHero">Find Jobs</button>
+          <button class="ghost" id="logoutBtn">Log out</button>
         </div>
       </div>
     </div>
