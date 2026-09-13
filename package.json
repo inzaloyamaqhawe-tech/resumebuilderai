@@ -1,0 +1,16 @@
+{
+  "name": "resumebuilderai",
+  "version": "1.0.0",
+  "description": "AI-powered resume tailoring + live job search — an IY Technologies showcase",
+  "main": "server.js",
+  "engines": { "node": ">=18" },
+  "scripts": { "start": "node server.js" },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "mammoth": "^1.8.0",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.14",
+    "pdf-parse": "^1.1.1"
+  }
+}

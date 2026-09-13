@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ResumeBuilderAI — AI-Powered CV Tailoring</title>
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#/dashboard">
+      <span class="brand-mark">📄</span>
+      <span class="brand-name">Resume<b>BuilderAI</b></span>
+    </a>
+    <nav class="mainnav" id="mainnav">
+      <button class="mainnav-item" data-view="dashboard">Home</button>
+      <button class="mainnav-item" data-view="jobs">Find Jobs</button>
+      <button class="mainnav-item" data-view="tailor">CV Tailor <span class="lock">🔒</span></button>
+      <button class="mainnav-item" data-view="pricing">Pricing</button>
+      <button class="mainnav-item" data-view="account">My Account</button>
+    </nav>
+    <div class="topbar-cta">
+      <span class="status-pill" id="authPill" style="display:none;"></span>
+      <span class="status-pill" id="demoPill" style="display:none;">DEMO MODE</span>
+    </div>
+  </div>
+</header>
+
+<main class="shell">
+  <div class="demo-banner" id="demoBanner" style="display:none;">
+    🧪 <strong>Demo mode</strong> — nothing here charges real money or persists permanently. Use Pricing → Simulate Payment to test any plan end to end.
+  </div>
+
+  <!-- HOME / HERO -->
+  <section class="view active" data-view="dashboard">
+    <div class="hero-banner">
+      <div class="hero-copy">
+        <div class="eyebrow">AI-powered infrastructure · IY Technologies showcase</div>
+        <h1>Search real jobs. Tailor your CV with AI. Apply with confidence.</h1>
+        <p>Search live job listings, pull in a role's description, and let our engine rewrite your CV to match it — keeping everything truthful to your real experience. One account works across search, tailoring, and your subscription.</p>
+        <div class="hero-stats">
+          <div class="stat-chip"><div class="n" id="statSource">—</div><div class="l">Live job source</div></div>
+          <div class="stat-chip"><div class="n" id="statAiMode">—</div><div class="l">Tailoring engine</div></div>
+          <div class="stat-chip"><div class="n">3</div><div class="l">Plans, R49–R89/mo</div></div>
+        </div>
+        <p class="hero-disclaimer">AI-tailored suggestions are a starting point — review everything before you submit an application. We never invent employers, dates, or skills you didn't provide.</p>
+      </div>
+
+      <div class="panel hero-auth" id="heroAuth">
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-mode="signup">Create free account</button>
+          <button class="auth-tab" data-mode="login">Log in</button>
+        </div>
+        <div id="authLoggedOut">
+          <p class="note" style="margin-top:0;">Free to search jobs and upload your CV. Subscribe any time to unlock AI tailoring.</p>
+          <div class="row"><input type="email" id="authEmail" placeholder="you@example.com" /></div>
+          <div class="row" style="margin-top:8px;"><input type="password" id="authPassword" placeholder="Password (min 6 characters)" /></div>
+          <div class="row" style="margin-top:10px;"><button id="authSubmitBtn">Create free account</button></div>
+          <div id="authMsg" class="note"></div>
+        </div>
+        <div id="authLoggedIn" style="display:none;">
+          <p>Signed in as <strong id="authWhoEmail"></strong></p>
+          <p class="note" id="authStatusNote"></p>
+          <div class="row">
+            <button class="secondary" id="goJobsFromHero">Find Jobs</button>
+            <button class="ghost" id="logoutBtn">Log out</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- JOBS -->
+  <section class="view" data-view="jobs">
+    <h1>Find Jobs</h1>
+    <p class="section-sub">Free for everyone — search live listings, read the full description, then send one straight into CV Tailor.</p>
+    <div class="job-source-note" id="jobSourceNote"></div>
+
+    <div class="panel">
+      <div class="row">
+        <input type="text" id="jobQuery" placeholder="Job title or keyword (e.g. accountant, developer)" />
+        <input type="text" id="jobLocation" placeholder="Location (or 'remote')" />
+        <button id="jobSearchBtn">Search</button>
+      </div>
+    </div>
+
+    <div id="jobResults"></div>
+  </section>
+
+  <!-- CV TAILOR -->
+  <section class="view" data-view="tailor">
+    <h1>CV Tailor</h1>
+    <p class="section-sub">Upload your CV, paste (or send in) a job description, and get a tailored match report — full AI rewrite once you're subscribed.</p>
+
+    <div class="panel">
+      <div class="dropzone" id="dropzone">
+        <strong>Click to upload</strong> or drag your CV here — PDF, DOCX, or TXT
+        <input type="file" id="cvFile" accept=".pdf,.docx,.txt" style="display:none;" />
+        <div class="cv-filename" id="cvFilename"></div>
+      </div>
+
+      <div class="row" style="margin-top:18px;">
+        <textarea id="jobDescInput" placeholder="Paste a job description here, or click 'Tailor my CV' from a job in Find Jobs."></textarea>
+      </div>
+
+      <div class="row" style="margin-top:14px;">
+        <input type="email" id="tailorEmail" placeholder="Your account email" />
+        <button id="tailorBtn">Tailor my CV</button>
+      </div>
+      <div id="tailorMsg" class="note"></div>
+
+      <div id="tailorLockedBox" class="locked-box" style="display:none;">
+        <div class="icon">🔒</div>
+        <p id="tailorLockedText">Subscribe to unlock AI-powered CV tailoring.</p>
+        <button id="goPricingFromTailor">See Pricing</button>
+      </div>
+
+      <div id="tailorResult" style="display:none;"></div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="view" data-view="pricing">
+    <h1>Pricing</h1>
+    <p class="section-sub">Prices billed in ZAR via PayPal. Showing your currency is for convenience only.</p>
+    <div class="row" style="margin-bottom:6px;">
+      <label class="note" style="margin:0;">Show prices in:</label>
+      <select id="currencySelect" class="currency-select">
+        <option value="ZAR">ZAR (R)</option>
+        <option value="USD">USD ($)</option>
+        <option value="EUR">EUR (€)</option>
+        <option value="GBP">GBP (£)</option>
+        <option value="AUD">AUD (A$)</option>
+        <option value="NGN">NGN (₦)</option>
+        <option value="KES">KES (KSh)</option>
+        <option value="INR">INR (₹)</option>
+      </select>
+    </div>
+    <div class="plans-grid" id="plansGrid"></div>
+    <div id="subResult" class="note"></div>
+  </section>
+
+  <!-- ACCOUNT -->
+  <section class="view" data-view="account">
+    <h1>My Account</h1>
+    <p class="section-sub">Your subscription status.</p>
+    <div class="panel" style="max-width:480px;" id="acctLoggedInBox">
+      <div class="row" style="justify-content:space-between;"><span class="note" style="margin:0;">Email</span><b id="acctEmailShown">—</b></div>
+      <div class="row" style="justify-content:space-between;"><span class="note" style="margin:0;">Plan</span><b id="acctPlan">—</b></div>
+      <div class="row" style="justify-content:space-between;"><span class="note" style="margin:0;">Status</span><b id="acctStatus">—</b></div>
+      <div class="row" style="justify-content:space-between;"><span class="note" style="margin:0;">Expires</span><b id="acctExpires">—</b></div>
+      <div class="row" style="justify-content:space-between;"><span class="note" style="margin:0;">Tailorings used</span><b id="acctTailorUsage">—</b></div>
+      <div class="row" style="margin-top:14px;">
+        <button class="secondary" id="acctPricingBtn">Go to Pricing</button>
+        <button class="ghost" id="acctLogoutBtn">Log out</button>
+      </div>
+    </div>
+    <div class="panel" style="max-width:480px;" id="acctLoggedOutBox">
+      <p>You're not logged in.</p>
+      <button id="acctGoHeroBtn">Create an account / log in →</button>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div>POWERED BY: <a href="https://iytechnologies.co.za" target="_blank" rel="noopener"><strong>Inzalo Yamaqhawe Technologies</strong></a></div>
+    <div>Questions? Reach us via PayPal.me/IYTechnologies for now.</div>
+  </div>
+</footer>
+
+<div class="modal-overlay" id="jobModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="jobModalTitle">—</div>
+        <div class="modal-sub" id="jobModalSub"></div>
+      </div>
+      <button class="ghost" id="jobModalClose">✕ Close</button>
+    </div>
+    <div class="job-detail-body" id="jobModalBody"></div>
+    <div class="row" style="margin-top:16px;">
+      <a id="jobApplyLink" href="#" target="_blank" rel="noopener"><button>Apply on original site ↗</button></a>
+      <button class="secondary" id="jobTailorBtn">Tailor my CV for this job</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
