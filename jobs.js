@@ -30,6 +30,15 @@ function stripHtml(html) {
   return text.replace(/\s+/g, ' ').trim();
 }
 
+// Adzuna only operates in these countries — a code outside this list 404s.
+const ADZUNA_COUNTRIES = new Set(['gb', 'us', 'at', 'au', 'br', 'ca', 'de', 'fr', 'in', 'it', 'nl', 'nz', 'pl', 'ru', 'sg', 'za', 'mx', 'es', 'se', 'ch']);
+
+// Arbeitnow has no country field — it's a free-text "location" string, and
+// most non-remote listings are Europe-only. Rather than silently show a
+// South African visitor a page of German/French roles when nothing matches
+// their location (the original bug), we filter by whatever location text we
+// have (country name, city, or "remote") and return an HONEST empty result
+// if nothing local exists, instead of falling back to the unfiltered globe.
 async function searchArbeitnow({ q, location }) {
   const res = await fetch('https://www.arbeitnow.com/api/job-board-api?page=1');
   const json = await res.json();
@@ -37,7 +46,7 @@ async function searchArbeitnow({ q, location }) {
   const locNeedle = (location || '').toLowerCase();
   const jobs = (json.data || [])
     .filter(j => !needle || j.title.toLowerCase().includes(needle) || (j.tags || []).some(t => t.toLowerCase().includes(needle)))
-    .filter(j => !locNeedle || (j.location || '').toLowerCase().includes(locNeedle) || (locNeedle === 'remote' && j.remote))
+    .filter(j => !locNeedle || (j.location || '').toLowerCase().includes(locNeedle) || (locNeedle.includes('remote') && j.remote))
     .slice(0, 30)
     .map(j => ({
       id: j.slug,
@@ -49,11 +58,10 @@ async function searchArbeitnow({ q, location }) {
       url: j.url,
       postedAt: j.created_at ? new Date(j.created_at * 1000).toISOString() : null,
     }));
-  return { source: 'Arbeitnow', jobs };
+  return { source: 'Arbeitnow', jobs, scopedTo: location || null };
 }
 
-async function searchAdzuna({ q, location }) {
-  const country = process.env.ADZUNA_COUNTRY || 'za';
+async function searchAdzuna({ q, location, country }) {
   const params = new URLSearchParams({
     app_id: process.env.ADZUNA_APP_ID,
     app_key: process.env.ADZUNA_APP_KEY,
@@ -76,17 +84,22 @@ async function searchAdzuna({ q, location }) {
     postedAt: j.created || null,
     salary: j.salary_min ? `${Math.round(j.salary_min)} - ${Math.round(j.salary_max || j.salary_min)}` : null,
   }));
-  return { source: `Adzuna (${country.toUpperCase()})`, jobs };
+  return { source: `Adzuna (${country.toUpperCase()})`, jobs, scopedTo: country };
 }
 
 const adzunaConfigured = () => !!(process.env.ADZUNA_APP_ID && process.env.ADZUNA_APP_KEY);
 
-async function searchJobs(params) {
-  if (adzunaConfigured()) {
-    try { return await searchAdzuna(params); }
+// `country` is the visitor's own detected (or chosen) ISO2 country code —
+// passed per-request from the client, not a fixed server-side default, so
+// results are scoped to whoever is actually searching, not just South
+// Africa for everyone.
+async function searchJobs({ q, location, country }) {
+  const countryCode = (country || process.env.ADZUNA_COUNTRY || 'za').toLowerCase();
+  if (adzunaConfigured() && ADZUNA_COUNTRIES.has(countryCode)) {
+    try { return await searchAdzuna({ q, location, country: countryCode }); }
     catch (e) { console.error('[jobs] Adzuna failed, falling back to Arbeitnow:', e.message); }
   }
-  return searchArbeitnow(params);
+  return searchArbeitnow({ q, location });
 }
 
-module.exports = { searchJobs, adzunaConfigured };
+module.exports = { searchJobs, adzunaConfigured, ADZUNA_COUNTRIES };

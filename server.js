@@ -3,7 +3,7 @@ const cors = require('cors');
 const crypto = require('crypto');
 const multer = require('multer');
 const { createStore, PLANS } = require('./storage');
-const { searchJobs, adzunaConfigured } = require('./jobs');
+const { searchJobs, adzunaConfigured, ADZUNA_COUNTRIES } = require('./jobs');
 const { extractText, tailorResume, isAiConfigured } = require('./resume');
 const { sendMail } = require('./mailer');
 
@@ -44,7 +44,7 @@ app.use(async (req, res, next) => {
 // ---- Config ----
 app.get('/health', (req, res) => res.json({ ok: true }));
 app.get('/api/config', (req, res) => {
-  res.json({ demoMode: DEMO_MODE, plans: PLANS, payPalHandle: PAYPAL_HANDLE, adzunaConfigured: adzunaConfigured(), aiConfigured: isAiConfigured() });
+  res.json({ demoMode: DEMO_MODE, plans: PLANS, payPalHandle: PAYPAL_HANDLE, adzunaConfigured: adzunaConfigured(), aiConfigured: isAiConfigured(), adzunaCountries: [...ADZUNA_COUNTRIES] });
 });
 
 // ---- Accounts ----
@@ -101,7 +101,7 @@ app.get('/api/auth/me', async (req, res) => {
 // ---- Jobs (free, no login required) ----
 app.get('/api/jobs', async (req, res) => {
   try {
-    const result = await searchJobs({ q: req.query.q, location: req.query.location });
+    const result = await searchJobs({ q: req.query.q, location: req.query.location, country: req.query.country });
     res.json(result);
   } catch (e) {
     console.error('job search failed', e);

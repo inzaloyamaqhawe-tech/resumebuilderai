@@ -104,12 +104,57 @@ async function loadConfig() {
   currentConfig = await res.json();
   document.getElementById('demoBanner').style.display = currentConfig.demoMode ? 'block' : 'none';
   document.getElementById('demoPill').style.display = currentConfig.demoMode ? 'inline-block' : 'none';
-  document.getElementById('statSource').textContent = currentConfig.adzunaConfigured ? 'Adzuna (ZA)' : 'Arbeitnow';
   document.getElementById('statAiMode').textContent = currentConfig.aiConfigured ? 'Gemini AI' : 'Keyword match';
-  document.getElementById('jobSourceNote').textContent = currentConfig.adzunaConfigured
-    ? 'Live listings via Adzuna (South Africa).'
-    : 'Live listings via Arbeitnow — mostly global/remote roles until an Adzuna key is added for full South African coverage.';
   renderPlans();
+  updateJobSourceNote();
+}
+
+// ---------- Geolocation: default search scope to the visitor's own country
+// instead of leaving it blank (which used to return an unfiltered global —
+// often non-English — feed to everyone, regardless of where they are). ----------
+let detectedGeo = null; // { countryCode, countryName, city }
+
+async function detectGeo() {
+  try {
+    const cached = sessionStorage.getItem('rba_geo');
+    if (cached) { detectedGeo = JSON.parse(cached); }
+    else {
+      const res = await fetch('https://ipapi.co/json/');
+      const data = await res.json();
+      if (data.country_code) {
+        detectedGeo = { countryCode: data.country_code.toLowerCase(), countryName: data.country_name, city: data.city };
+        sessionStorage.setItem('rba_geo', JSON.stringify(detectedGeo));
+      }
+    }
+  } catch (e) { /* geolocation is a convenience default, not required */ }
+
+  if (detectedGeo) {
+    const defaultLoc = detectedGeo.countryName;
+    [document.getElementById('heroLocation'), document.getElementById('jobLocation')].forEach(el => {
+      if (el && !el.value) el.placeholder = `Location or 'remote' (defaults to ${defaultLoc})`;
+    });
+  }
+  updateJobSourceNote();
+}
+
+function updateJobSourceNote() {
+  const el = document.getElementById('jobSourceNote');
+  if (!el || !currentConfig) return;
+  const supported = detectedGeo && currentConfig.adzunaCountries?.includes(detectedGeo.countryCode);
+  if (currentConfig.adzunaConfigured && supported) {
+    document.getElementById('statSource').textContent = `Adzuna (${detectedGeo.countryName})`;
+    el.textContent = `Live listings via Adzuna, scoped to ${detectedGeo.countryName}.`;
+  } else if (currentConfig.adzunaConfigured) {
+    document.getElementById('statSource').textContent = 'Adzuna';
+    el.textContent = detectedGeo
+      ? `Adzuna doesn't cover ${detectedGeo.countryName} — showing Arbeitnow's global/remote listings instead. Type a specific location above to narrow it down.`
+      : 'Live listings via Adzuna.';
+  } else {
+    document.getElementById('statSource').textContent = 'Arbeitnow';
+    el.textContent = detectedGeo
+      ? `Live listings via Arbeitnow, filtered to ${detectedGeo.countryName} where possible — it's a Europe/remote-leaning free source, so local results may be thin. Add an Adzuna key for proper ${detectedGeo.countryName} coverage.`
+      : `Live listings via Arbeitnow — mostly global/remote roles until an Adzuna key is added for full local coverage.`;
+  }
 }
 
 // ---------- Jobs ----------
@@ -118,13 +163,18 @@ let lastJobs = [];
 
 async function searchJobs() {
   const q = document.getElementById('jobQuery').value.trim();
-  const location = document.getElementById('jobLocation').value.trim();
+  const location = document.getElementById('jobLocation').value.trim() || detectedGeo?.countryName || '';
+  const country = detectedGeo?.countryCode || '';
   jobResults.innerHTML = '<p class="note">Searching…</p>';
   try {
-    const res = await fetch(`/api/jobs?q=${encodeURIComponent(q)}&location=${encodeURIComponent(location)}`);
+    const res = await fetch(`/api/jobs?q=${encodeURIComponent(q)}&location=${encodeURIComponent(location)}&country=${encodeURIComponent(country)}`);
     const data = await res.json();
     lastJobs = data.jobs || [];
-    if (!lastJobs.length) { jobResults.innerHTML = '<p class="note">No matching jobs found — try a broader search.</p>'; return; }
+    if (!lastJobs.length) {
+      const scope = data.scopedTo || location;
+      jobResults.innerHTML = `<p class="note">No matching jobs found${scope ? ` for "${scope}"` : ''} — try "remote", a broader keyword, or clear the location box. ${!currentConfig?.adzunaConfigured ? 'Local coverage improves once an Adzuna key is added.' : ''}</p>`;
+      return;
+    }
     jobResults.innerHTML = lastJobs.map((j, i) => `
       <div class="job-card" data-idx="${i}">
         <div class="jc-top">
@@ -352,5 +402,6 @@ async function demoActivate(plan) {
 
 // ---------- Boot ----------
 loadConfig();
+detectGeo();
 refreshMe();
 routeFromHash();
